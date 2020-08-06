@@ -3,6 +3,8 @@ import {useParams} from 'react-router-dom';
 import {useQuery} from '@apollo/react-hooks';
 import {QUERY_THOUGHT} from '../utils/queries';
 import ReactionList from '../components/ReactionList';
+import ReactionForm from '../components/ReactionForm';
+import Auth from '../utils/auth'
 
 const SingleThought = props => {
 
@@ -30,6 +32,7 @@ const SingleThought = props => {
       </div>
        {/* if reaction count greater than zero render reaction list component */}
        {thought.reactionCount > 0 && <ReactionList reactions={thought.reactions}/>}
+       {Auth.loggedIn() &&<ReactionForm thoughtId={thought._id}/>}
     </div>
   );
 };

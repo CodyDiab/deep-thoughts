@@ -1,11 +1,32 @@
 import React, { useState } from 'react';
 import {useMutation} from '@apollo/react-hooks';
 import {ADD_THOUGHT} from '../../utils/mutations';
+import {QUERY_THOUGHTS, QUERY_ME} from '../../utils/queries';
 
 const ThoughtForm = () => {
     const [thoughtText,setText] = useState('');
     const [characterCount, setCharacterCount] = useState(0);
-    const [addThought, {error}] = useMutation(ADD_THOUGHT);
+    const [addThought, {error}] = useMutation(ADD_THOUGHT, {
+        update(cache, {data: {addThought}}) {
+            try{
+            // read what's in cache
+            const {thoughts} = cache.readQuery({query: QUERY_THOUGHTS});
+            // prepend the newest thought to array
+            cache.writeQuery({
+                query: QUERY_THOUGHTS,
+                data: {thoughts: [addThought, ...thoughts]}
+            });
+        } catch (e) {
+            console.error(e);
+        }
+        //update me object cache with new thought
+        const{me} = cache.readQuery({query: QUERY_ME});
+         cache.writeQuery({
+             query: QUERY_ME,
+             data: {me: {...me,thoughts:[...me.thoughts,addThought]}}
+         });
+        }
+    });
     
     const handleChange = event => {
         if(event.target.value.length <= 280) {
