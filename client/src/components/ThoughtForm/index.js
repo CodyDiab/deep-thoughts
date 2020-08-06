@@ -1,8 +1,11 @@
 import React, { useState } from 'react';
+import {useMutation} from '@apollo/react-hooks';
+import {ADD_THOUGHT} from '../../utils/mutations';
 
 const ThoughtForm = () => {
     const [thoughtText,setText] = useState('');
     const [characterCount, setCharacterCount] = useState(0);
+    const [addThought, {error}] = useMutation(ADD_THOUGHT);
     
     const handleChange = event => {
         if(event.target.value.length <= 280) {
@@ -12,14 +15,24 @@ const ThoughtForm = () => {
     };
     const handleFormSubmit = async event => {
         event.preventDefault();
-        setText('');
-        setCharacterCount(0);
+       try {
+           //add to db
+           await addThought({
+               variables: {thoughtText}
+           });
+           //clear form
+           setText('');
+           setCharacterCount(0);
+       } catch (e) {
+           console.error(e)
+       }
     };
 
   return (
     <div>
       <p className={`m-0 ${characterCount === 280 ? 'text-error' : ''}`}>
         Character Count: {characterCount}/280
+        {error && <span className="ml-2">Something went wrong...</span>}
       </p>
       <form className="flex-row justify-center justify-space-between-md align-stretch"
       onSubmit={handleFormSubmit}
